@@ -4,6 +4,7 @@ import { AlurakutMenu, OrkutNostalgicIconSet, AlurakutProfileSidebarMenuDefault 
 import { ProfileRelationsBoxWrapper } from '../src/components/ProfileRelations';
 import React from 'react';
 
+
 function ProfileSideBar(propriedades){
   return(
     <Box as="aside">
@@ -20,6 +21,29 @@ function ProfileSideBar(propriedades){
   )
 }
 
+function ProfileRelationsBox(propriedades){
+  return(
+    <ProfileRelationsBoxWrapper>
+        <h2 className="smallTitle">
+          {propriedades.title} ({propriedades.items.length})
+        </h2>
+        
+       <ul>
+          {/*propriedades.map((itemAtual) => {
+            return(
+              <li key={itemAtual}>
+                <a href={`https://github.com/${itemAtual}.png`} key={itemAtual}>
+                <img src={`https://github.com/${itemAtual}.png`} />
+                <span>{itemAtual}</span>
+                </a>
+              </li> 
+            )
+          })*/}
+        </ul>
+      </ProfileRelationsBoxWrapper>
+  )
+}
+
 export default function Home(propriedades) {
   const usuario = 'GustavoManoelSantos';
 
@@ -28,6 +52,21 @@ export default function Home(propriedades) {
     'filipedeschamps',
     'loiane',
     ]
+
+  
+  const [seguidores, setSeguidores] = React.useState([]);  
+  
+  React.useEffect(function(){
+    fetch('https://api.github.com/users/GustavoManoelSantos/followers')
+    .then(function (respostaServidor){
+      return respostaServidor.json();
+    })
+    .then(function(respostaCompleta){
+      setSeguidores(respostaCompleta);
+    })
+  }, [])
+
+
 
     //const comunidades = comunidades[0];
     //const alterarComunidades / setComunidades = comunidades[1];
@@ -112,6 +151,9 @@ export default function Home(propriedades) {
         </ul>
       </ProfileRelationsBoxWrapper>
 
+      <div className="profileRelationsArea" style={{gridArea: 'profileRelationsArea'}}/>
+        <ProfileRelationsBox title="Seguidores" items={seguidores}/>     
+      
       <ProfileRelationsBoxWrapper>
       <h2 className="smallTitle">
           Comunidades ({comunidades.length})
