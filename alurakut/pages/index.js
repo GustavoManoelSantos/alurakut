@@ -45,6 +45,7 @@ function ProfileRelationsBox(propriedades){
 }
 
 export default function Home(propriedades) {
+
   const usuario = 'GustavoManoelSantos';
 
   const pessoasFavoritas = [
@@ -53,30 +54,49 @@ export default function Home(propriedades) {
     'loiane',
     ]
 
-  
   const [seguidores, setSeguidores] = React.useState([]);  
-  
+
+  const [comunidades, setComunidades] = React.useState([])
+
   React.useEffect(function(){
-    fetch('https://api.github.com/users/GustavoManoelSantos/followers')
+    fetch('https://api.github.com/GustavoManoelSantos/followers')
     .then(function (respostaServidor){
       return respostaServidor.json();
     })
     .then(function(respostaCompleta){
       setSeguidores(respostaCompleta);
     })
+
+    fetch('https://graphql.datocms.com/', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'a927d54ebd5460a82fbc547b55da3c',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({"query": `query {
+        allCommunities {
+          title
+          id
+          imageUrl
+          creatorSlug
+        }
+      }` })
+    })
+    .then((response) => response.json())
+    .then((respostaCompleta) => {
+      const comunidadesDato = respostaCompleta.data.allCommunities;
+      console.log(comunidadesDato)
+      setComunidades(comunidadesDato)
+    })
   }, [])
 
-
+    ;
 
     //const comunidades = comunidades[0];
     //const alterarComunidades / setComunidades = comunidades[1];
 
-    const [comunidades, setComunidades] = React.useState([{
-      id: '568741123978564123',
-      title: 'Club Penguin',
-      image: 'https://hablamosdegamers.com/wp-content/uploads/2019/11/Club-Penguin-Codes-Complete-list-November-1200x900.jpg',
-    }]);
-
+    
 
   return(
   <>
@@ -108,16 +128,29 @@ export default function Home(propriedades) {
             //console.log(comunidades);
 
             const comunidade = {
-              id: new Date().toISOString(),
               title: dadosDoForm.get('title'),
-              title: dadosDoForm.get('image'),
+              imageUrl: dadosDoForm.get('image'),
+              creatorSlug: usuario,
             }
 
-            const comunidadesAtualizadas = [...comunidades, comunidade];
-            setComunidades(comunidadesAtualizadas);
+            fetch('api/comunidades', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(comunidade)
+            })
+            .then(async (response) => {
+              const dados = await response.json();
+              console.log(dados.registroCriado);
+              const comunidade = dados.registroCriado;
+              const comunidadesAtualizadas = [...comunidades, comunidade];
+              setComunidades(comunidadesAtualizadas);
+            })  
         }}>
+
           <div>
-            <input placeholder="Qual vai ser o nome da comuniade?" name="title" type="text" aria-label="Qual vai ser o nome da comuniade?"/>
+            <input placeholder="Qual vai ser o nome da comunidade?" name="title" type="text" aria-label="Qual vai ser o nome da comunidade?"/>
           </div>
 
           <div>
@@ -162,9 +195,9 @@ export default function Home(propriedades) {
       <ul>
           {comunidades.map((itemAtual) => {
             return(
-              <li key={itemAtual.id}>
-                <a href={`/users/${itemAtual.title}`, "https://community.cprewritten.net/"} key={itemAtual.title}>
-                  <img src={itemAtual.image} />
+              <li>
+                <a href={`/communities/${itemAtual.id}`}>
+                  <img src={itemAtual.imageUrl} />
                 <span>{itemAtual.title}</span>
                 </a>
               </li> 
